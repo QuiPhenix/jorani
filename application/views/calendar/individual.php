@@ -152,31 +152,37 @@ $(function () {
         eventAfterRender: function(event, element, view) {
             //Add tooltip to the element
             $(element).attr('title', event.title);
-
-            if (event.enddatetype == "Morning" || event.startdatetype == "Afternoon") {
-                var nb_days = event.end.diff(event.start, "days");
-                var duration = 0.5;
-                var halfday_length = 0;
-                var length = 0;
-                var width = parseInt(jQuery(element).css('width'));
-                if (nb_days > 0) {
-                    if (event.enddatetype == "Afternoon") {
-                        duration = nb_days + 0.5;
-                    } else {
-                        duration = nb_days;
-                    }
-                    nb_days++;
-                    halfday_length = Math.round((width / nb_days) / 2);
-                    if (event.startdatetype == "Afternoon" && event.enddatetype == "Morning") {
-                        length = width - (halfday_length * 2);
-                    } else {
-                        length = width - halfday_length;
-                    }
-                } else {
-                    halfday_length = Math.round(width / 2);   //Average width of a day divided by 2
-                    length = halfday_length;
-                }
-            }
+			//HACK: display non pour demande d'absence
+            if (event.title.indexOf('absence')< 0) {
+														
+				if (event.enddatetype == "Morning" || event.startdatetype == "Afternoon") {
+					var nb_days = event.end.diff(event.start, "days");
+					var duration = 0.5;
+					var halfday_length = 0;
+					var length = 0;
+					var width = parseInt(jQuery(element).css('width'));
+					if (nb_days > 0) {
+						if (event.enddatetype == "Afternoon") {
+							duration = nb_days + 0.5;
+						} else {
+							duration = nb_days;
+						}
+						nb_days++;
+						halfday_length = Math.round((width / nb_days) / 2);
+						if (event.startdatetype == "Afternoon" && event.enddatetype == "Morning") {
+							length = width - (halfday_length * 2);
+						} else {
+							length = width - halfday_length;
+						}
+					} else {
+						halfday_length = Math.round(width / 2);   //Average width of a day divided by 2
+						length = halfday_length;
+					}
+				}
+			//HACK: display non pour demande d'absence
+            } else {
+				$(element).css('display', 'none');
+            }								
             $(element).css('width', length + "px");
 
             //Starting afternoon : shift the position of event to the right

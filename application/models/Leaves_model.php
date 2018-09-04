@@ -799,7 +799,8 @@ class Leaves_model extends CI_Model {
         $this->db->join('users', 'users.id = leaves.employee');
         $this->db->where('users.manager', $user_id);
         $this->db->where('leaves.status < ', LMS_REJECTED);       //Exclude rejected requests
-        $this->db->where('(leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
+		//HACK: suppression des demandes d'absences
+		$this->db->where('leaves.type != 4 AND (leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
         $this->db->order_by('startdate', 'desc');
         $this->db->limit(1024);  //Security limit
         $events = $this->db->get('leaves')->result();
@@ -866,7 +867,8 @@ class Leaves_model extends CI_Model {
     public function collaborators($user_id, $start = "", $end = "") {
         $this->db->join('users', 'users.id = leaves.employee');
         $this->db->where('users.manager', $user_id);
-        $this->db->where('(leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
+		//HACK: suppression demande d'absence
+        $this->db->where('leaves.type != 4 AND  (leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
         $this->db->order_by('startdate', 'desc');
         $this->db->limit(1024);  //Security limit
         $events = $this->db->get('leaves')->result();
@@ -940,7 +942,8 @@ class Leaves_model extends CI_Model {
         $this->db->join('users', 'users.organization = organization.id');
         $this->db->join('leaves', 'leaves.employee = users.id');
         $this->db->join('types', 'leaves.type = types.id');
-        $this->db->where('(leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
+		//HACK: demande d'absence supprimees de ce calendirer
+		$this->db->where('leaves.type != 4 AND (leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
         if ($children === TRUE) {
             $this->load->model('organization_model');
             $list = $this->organization_model->getAllChildren($entity_id);
@@ -1411,9 +1414,11 @@ class Leaves_model extends CI_Model {
               if ($display[1] == '2') $total += 0.5;
               if ($display[1] == '3') $total += 0.5;
           } else {
-              if ($day->display == 2) $total += 0.5;
-              if ($day->display == 3) $total += 0.5;
-              if ($day->display == 1) $total += 1;
+			//HACK: si type Demande d'absence, on ne compte pas en jour d'absence
+			//OLD: if ($day->display == 2) $total += 0.5;
+			if ($day->display == 2 && !strstr($day->type,'absence')) $total += 0.5;
+			if ($day->display == 3) $total += 0.5;
+            if ($day->display == 1) $total += 1;
           }
         }
         return $total;
@@ -1506,7 +1511,8 @@ class Leaves_model extends CI_Model {
         $this->db->from('leaves');
         $this->db->join('types', 'leaves.type = types.id');
         $this->db->join('users', 'leaves.employee = users.id');
-        $this->db->where('(leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
+		//HACK: suppression du type 4 demande d'abscence dans le rapport de presence
+        $this->db->where('leaves.type != 4 AND (leaves.startdate <= DATE(' . $this->db->escape($end) . ') AND leaves.enddate >= DATE(' . $this->db->escape($start) . '))');
         if (!$planned) $this->db->where('leaves.status != ', LMS_PLANNED);
         if (!$requested) $this->db->where('leaves.status != ', LMS_REQUESTED);
         if (!$accepted) $this->db->where('leaves.status != ', LMS_ACCEPTED);

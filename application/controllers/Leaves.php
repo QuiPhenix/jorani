@@ -219,6 +219,10 @@ class Leaves extends CI_Controller {
         $this->form_validation->set_rules('type', lang('leaves_create_field_type'), 'required|strip_tags');
         $this->form_validation->set_rules('cause', lang('leaves_create_field_cause'), 'strip_tags');
         $this->form_validation->set_rules('status', lang('leaves_create_field_status'), 'required|strip_tags');
+		//HACK: si demande d'absence, alors duration a 0
+		if(isset($_POST['type']) && $_POST['type'] == "4") { 
+			$_POST['duration'] = 0; 
+		}										 
 
         if ($this->form_validation->run() === FALSE) {
             $this->load->model('contracts_model');

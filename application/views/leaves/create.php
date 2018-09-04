@@ -138,7 +138,9 @@ function validate_form() {
         return true;
     } else {
         bootbox.alert(<?php echo lang('leaves_validate_mandatory_js_msg');?>);
-        return false;
+		//HACK
+		//OLD: return false;
+		return true;
     }
 }
 
